@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Player Radar & Compare — European Soccer (2025/26)</title>
+<style>
+  :root{--bg:#0f1419;--panel:#171e26;--line:#26303b;--txt:#e6edf3;--mut:#8b9bab;
+        --A:#388bfd;--B:#e5544b;
+        --att:#e5544b;--cre:#8957e5;--def:#3fb950;--pos:#ec6cb9;--gen:#d8a000;}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+  header{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+  h1{margin:0 0 4px;font-size:18px}
+  .sub{color:var(--mut);font-size:12px}
+  a{color:var(--A)}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+  select,input[type=text]{background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px}
+  input[type=text]{min-width:230px}
+  input[type=number].agein{width:56px;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px}
+  .lab{color:var(--mut);font-size:12px;margin-right:-4px}
+  .dotA,.dotB{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:4px}
+  .dotA{background:var(--A)}.dotB{background:var(--B)}
+  .charts{display:flex;flex-wrap:wrap;gap:24px;padding:20px;justify-content:center}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .legend{display:flex;gap:18px;justify-content:center;padding:4px 20px 0;flex-wrap:wrap;color:var(--mut);font-size:12px}
+  .legend b{color:var(--txt)}
+  table{border-collapse:collapse;margin:8px auto 30px;font-size:13px}
+  th,td{padding:6px 12px;border-bottom:1px solid var(--line);text-align:right}
+  th.l,td.l{text-align:left}
+  th{color:var(--mut);font-weight:600;font-size:12px}
+  .catdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .foot{padding:10px 20px;color:var(--mut);font-size:11px;border-top:1px solid var(--line)}
+  .hint{color:var(--mut);font-size:12px;text-align:center;padding:0 20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Player Radar &amp; Compare <span style="color:var(--mut);font-weight:400">2025/26 season</span>
+    <span style="float:right;font-size:13px;font-weight:600"><a href="index.html">← Players</a> &nbsp; <a href="teams.html">Teams →</a></span></h1>
+  <div class="sub">Percentile profiles vs a peer group. Each metric is per-90 and ranked within the chosen pool. Data via balldontlie.</div>
+</header>
+<div class="controls">
+  <span class="lab"><span class="dotA"></span>Player A</span>
+  <input type="text" id="inA" list="plist" placeholder="Search player A…"/>
+  <span class="lab"><span class="dotB"></span>Player B</span>
+  <input type="text" id="inB" list="plist" placeholder="Search player B (optional)…"/>
+  <datalist id="plist"></datalist>
+  <span class="lab">Pool</span>
+  <select id="pool">
+    <option value="own" selected>Each vs own position</option>
+    <option value="all">All outfield players</option>
+    <option value="Goalkeeper">Goalkeepers</option>
+    <option value="Defender">Defenders</option>
+    <option value="Midfielder">Midfielders</option>
+    <option value="Forward">Forwards</option>
+  </select>
+  <span class="lab">Min mins</span>
+  <select id="minmin">
+    <option value="0">any</option>
+    <option value="450">450+</option>
+    <option value="900" selected>900+</option>
+    <option value="1350">1350+</option>
+    <option value="1800">1800+</option>
+  </select>
+  <span class="lab">Pool age</span>
+  <input type="number" id="agemin" min="14" max="50" placeholder="min" class="agein"/>
+  <span style="color:var(--mut)">–</span>
+  <input type="number" id="agemax" min="14" max="50" placeholder="max" class="agein"/>
+  <span class="lab">Focus</span>
+  <select id="focus">
+    <option value="" selected>All categories</option>
+    <option value="gen">General</option>
+    <option value="att">Attacking</option>
+    <option value="cre">Creating</option>
+    <option value="def">Defending</option>
+  </select>
+  <span class="lab">Chart</span>
+  <select id="ctype">
+    <option value="pizza" selected>Pizza (per player)</option>
+    <option value="radar">Radar (overlay)</option>
+  </select>
+</div>
+<div class="legend">
+  <span><span class="catdot" style="background:var(--gen)"></span>General</span>
+  <span><span class="catdot" style="background:var(--att)"></span>Attacking</span>
+  <span><span class="catdot" style="background:var(--cre)"></span>Creating</span>
+  <span><span class="catdot" style="background:var(--def)"></span>Defending</span>
+</div>
+<div class="hint" id="hint"></div>
+<div class="charts" id="charts"></div>
+<div id="tablewrap"></div>
+<div class="foot">
+  Percentiles compare each player to peers in the selected pool (per-90, current 2025/26 season — the only season with these advanced metrics).
+  0 = lowest, 100 = best in pool. “Each vs own position” ranks every player against players sharing their primary position.
+  Position = most common lineup slot. Goalkeepers' outfield metrics are mostly near 0 by nature.
+</div>
+<script>
+// each metric: [key, label, rate]  rate=1 -> per-90 counting stat, 0 -> raw value (e.g. rating)
+const CATS=[
+  ["gen","General",[["rating","Rating",0],["touches","Touches",1],["passes_acc","Passes ✓",1],["duels_won","Duels Won",1]]],
+  ["att","Attacking",[["goals","Goals",1],["np_goals","NP Goals",1],["xg","xG",1],["shots","Shots",1],["shots_on_t","Shots on T",1],["dribbles","Dribbles",1],["big_chances_missed","Big Ch Missed",1]]],
+  ["cre","Creating",[["xa","xA",1],["key_passes","Key Passes",1],["assists","Assists",1],["big_chances_created","Big Ch Created",1],["crosses_acc","Crosses ✓",1]]],
+  ["def","Defending",[["tackles","Tackles",1],["tackles_won","Tackles Won",1],["interceptions","Interceptions",1],["clearances","Clearances",1],["blocked_shots","Blocks",1],["aerials_won","Aerials Won",1],["recoveries","Recoveries",1]]],
+];
+const CATVAR={gen:"var(--gen)",att:"var(--att)",cre:"var(--cre)",def:"var(--def)"};
+// flat metric list in display order (grouped)
+const ALLMETRICS=[]; CATS.forEach(c=>c[2].forEach(m=>ALLMETRICS.push({key:m[0],label:m[1],cat:c[0],rate:m[2]})));
+let METRICS=ALLMETRICS.slice();
+function setMetrics(){const f=document.getElementById("focus").value;
+  METRICS = f? ALLMETRICS.filter(m=>m.cat===f) : ALLMETRICS.slice();}
+const POSCODE={Goalkeeper:"G",Defender:"D",Midfielder:"M",Forward:"F"};
+let DATA=[], KEYMAP={};
+
+function per90(p,key){const m=p.minutes||0; if(!m)return 0; return (p[key]||0)*90/m;}
+function mval(p,m){return m.rate? per90(p,m.key) : (p[m.key]||0);}
+function keyOf(p){return `${p.name} — ${p.team||'?'} · ${p.league}`;}
+
+fetch("players.json").then(r=>r.json()).then(d=>{DATA=d; setup();});
+
+function setup(){
+  // datalist (dedup by display key)
+  const opts=[...new Set(DATA.map(keyOf))].sort();
+  document.getElementById("plist").innerHTML=opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}">`).join("");
+  DATA.forEach(p=>KEYMAP[keyOf(p)]=p);
+  // sensible defaults
+  const a=DATA.find(p=>p.name==="Lamine Yamal")||DATA.find(p=>p.pos==="Forward");
+  const b=DATA.find(p=>p.name==="Bukayo Saka")||DATA.find(p=>p.pos==="Forward"&&p!==a);
+  if(a)document.getElementById("inA").value=keyOf(a);
+  if(b)document.getElementById("inB").value=keyOf(b);
+  ["inA","inB","pool","minmin","ctype","focus","agemin","agemax"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  render();
+}
+
+function poolFor(player){
+  const mode=document.getElementById("pool").value, mn=+document.getElementById("minmin").value,
+        amin=parseInt(document.getElementById("agemin").value), amax=parseInt(document.getElementById("agemax").value);
+  let pool=DATA.filter(p=>(p.minutes||0)>=mn
+        && (isNaN(amin)||(p.age!=null&&p.age>=amin)) && (isNaN(amax)||(p.age!=null&&p.age<=amax)));
+  if(mode==="own") pool=pool.filter(p=>p.pos===player.pos);
+  else if(mode!=="all") pool=pool.filter(p=>p.pos===mode);
+  else pool=pool.filter(p=>p.pos!=="Goalkeeper");
+  return pool.length?pool:DATA;
+}
+function pct(player,m,pool){
+  const v=mval(player,m);
+  let le=0; for(const q of pool){ if(mval(q,m)<=v) le++; }
+  return Math.round(100*le/pool.length);
+}
+function profile(player){
+  const pool=poolFor(player);
+  return METRICS.map(m=>({...m, pct:pct(player,m,pool), raw:mval(player,m)}));
+}
+
+// ---- geometry ----
+function pt(cx,cy,r,deg){const a=deg*Math.PI/180; return [cx+r*Math.sin(a), cy-r*Math.cos(a)];}
+function sector(cx,cy,r0,r1,a0,a1){
+  const [x0,y0]=pt(cx,cy,r1,a0),[x1,y1]=pt(cx,cy,r1,a1);
+  const [x2,y2]=pt(cx,cy,r0,a1),[x3,y3]=pt(cx,cy,r0,a0);
+  const big=(a1-a0)>180?1:0;
+  return `M${x0},${y0} A${r1},${r1} 0 ${big} 1 ${x1},${y1} L${x2},${y2} A${r0},${r0} 0 ${big} 0 ${x3},${y3} Z`;
+}
+
+function pizza(player){
+  const prof=profile(player);
+  const S=420, cx=S/2, cy=S/2+8, R=150, N=prof.length, ang=360/N;
+  let g=`<svg viewBox="0 0 ${S} ${S+90}" width="${S}" height="${S+90}">`;
+  // title
+  g+=`<text x="${cx}" y="26" text-anchor="middle" fill="#e6edf3" font-size="18" font-weight="700">${player.name}</text>`;
+  g+=`<text x="${cx}" y="44" text-anchor="middle" fill="#8b9bab" font-size="12">${player.team||''} · ${player.league} · ${player.pos} · ${player.age??'?'}y · ${player.matches} matches · ${player.minutes} mins</text>`;
+  // grid rings
+  [25,50,75,100].forEach(v=>{const rr=R*v/100;
+    g+=`<circle cx="${cx}" cy="${cy}" r="${rr}" fill="none" stroke="#26303b" stroke-width="1"/>`;});
+  // wedges
+  prof.forEach((m,i)=>{
+    const a0=i*ang-90-ang/2+1, a1=i*ang-90+ang/2-1;
+    const r1=8+(R-8)*m.pct/100;
+    g+=`<path d="${sector(cx,cy,8,r1,a0,a1)}" fill="${CATVAR[m.cat]}" fill-opacity="0.85" stroke="#0f1419" stroke-width="1"/>`;
+    // value
+    const [vx,vy]=pt(cx,cy,r1-14,(a0+a1)/2);
+    g+=`<text x="${vx}" y="${vy+4}" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">${m.pct}</text>`;
+    // label
+    const [lx,ly]=pt(cx,cy,R+22,(a0+a1)/2);
+    const anchor=Math.abs(((a0+a1)/2+90)%360-180)<1?"middle":(((a0+a1)/2+360)%360<180?"start":"end");
+    g+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" fill="#c8d3de" font-size="11">${m.label}</text>`;
+  });
+  g+=`</svg>`;
+  return `<div class="card">${g}</div>`;
+}
+
+function radar(players){
+  const profs=players.map(p=>({p,prof:profile(p)}));
+  const S=520, cx=S/2, cy=S/2+10, R=185, N=METRICS.length, ang=360/N;
+  const cols=["var(--A)","var(--B)"];
+  let g=`<svg viewBox="0 0 ${S} ${S+30}" width="${S}" height="${S+30}">`;
+  [25,50,75,100].forEach(v=>{const rr=R*v/100;
+    g+=`<circle cx="${cx}" cy="${cy}" r="${rr}" fill="none" stroke="#26303b"/>`;
+    g+=`<text x="${cx+3}" y="${cy-rr+12}" fill="#3f4d5a" font-size="9">${v}</text>`;});
+  // axes + labels
+  METRICS.forEach((m,i)=>{
+    const a=i*ang-90; const [ex,ey]=pt(cx,cy,R,a);
+    g+=`<line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="#1f2933"/>`;
+    const [lx,ly]=pt(cx,cy,R+24,a);
+    const anchor=Math.abs((a+90)%360-180)<1?"middle":(((a+360)%360)<180?"start":"end");
+    g+=`<circle cx="${pt(cx,cy,R+12,a)[0]}" cy="${pt(cx,cy,R+12,a)[1]}" r="3.5" fill="${CATVAR[m.cat]}"/>`;
+    g+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" fill="#c8d3de" font-size="10.5">${m.label}</text>`;
+  });
+  // polygons
+  profs.forEach((pp,idx)=>{
+    const pts=pp.prof.map((m,i)=>pt(cx,cy,R*m.pct/100,i*ang-90));
+    const path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'Z';
+    g+=`<path d="${path}" fill="${cols[idx]}" fill-opacity="0.18" stroke="${cols[idx]}" stroke-width="2"/>`;
+    pts.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.5" fill="${cols[idx]}"/>`);
+  });
+  g+=`</svg>`;
+  let leg=profs.map((pp,i)=>`<span><span class="${i?'dotB':'dotA'}"></span><b>${pp.p.name}</b> <span style="color:var(--mut)">(${pp.p.team||''} · ${pp.p.pos})</span></span>`).join("");
+  return `<div class="card" style="text-align:center"><div class="legend">${leg}</div>${g}</div>`;
+}
+
+function valuesTable(players){
+  const profs=players.map(p=>profile(p));
+  let h=`<table><thead><tr><th class="l">Metric</th>`;
+  players.forEach((p,i)=>{h+=`<th>${i?'<span class=dotB></span>':'<span class=dotA></span>'}${p.name}</th><th>pct</th>`});
+  h+=`</tr></thead><tbody>`;
+  let lastCat=null;
+  METRICS.forEach((m,mi)=>{
+    if(m.cat!==lastCat){lastCat=m.cat; const cn=CATS.find(c=>c[0]===m.cat)[1];
+      h+=`<tr><td class="l" colspan="${1+players.length*2}" style="color:var(--mut);padding-top:10px"><span class="catdot" style="background:${CATVAR[m.cat]}"></span>${cn}</td></tr>`;}
+    h+=`<tr><td class="l">${m.label}</td>`;
+    players.forEach((p,pi)=>{const e=profs[pi][mi];
+      h+=`<td>${e.raw.toFixed(2)}</td><td style="color:${e.pct>=67?'#3fb950':e.pct>=34?'#d8b400':'#e5544b'};font-weight:700">${e.pct}</td>`;});
+    h+=`</tr>`;
+  });
+  h+=`</tbody></table>`;
+  return h;
+}
+
+function render(){
+  const a=KEYMAP[document.getElementById("inA").value];
+  const b=KEYMAP[document.getElementById("inB").value];
+  const players=[a,b].filter(Boolean);
+  const charts=document.getElementById("charts"), tw=document.getElementById("tablewrap"), hint=document.getElementById("hint");
+  if(!players.length){charts.innerHTML=""; tw.innerHTML=""; hint.textContent="Type a player name above to begin."; return;}
+  hint.textContent="";
+  setMetrics();
+  const ct=document.getElementById("ctype").value;
+  if(ct==="radar" && players.length){
+    charts.innerHTML=radar(players);
+  } else {
+    charts.innerHTML=players.map(pizza).join("");
+  }
+  tw.innerHTML = players.length ? `<div style="text-align:center;color:var(--mut);font-size:12px;margin-top:6px">Per-90 values (rating is raw average) &amp; percentiles</div>`+valuesTable(players) : "";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Raw scraped data (multi-GB) and exports — regenerate via the scrapers
+data/
+exports/
+*.tar.gz
+
+# Logs / scratch
+*.log
+*.run.out
+*.out
+scrape.run.out
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / build
+node_modules/
+scout/node_modules/
+scout/dist/
+dist/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>European Soccer — Player Profiles (2025/26)</title>
+<style>
+  :root{--bg:#0f1419;--panel:#171e26;--line:#26303b;--txt:#e6edf3;--mut:#8b9bab;
+        --accent:#3fb950;--accent2:#388bfd;--head:#1f2933;}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--txt)}
+  header{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+  h1{margin:0 0 4px;font-size:18px}
+  .sub{color:var(--mut);font-size:12px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 20px;
+            background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  select,input[type=text]{background:var(--bg);color:var(--txt);border:1px solid var(--line);
+            border-radius:6px;padding:6px 8px;font-size:13px}
+  input[type=text]{min-width:180px}
+  .tabs{display:flex;gap:4px;margin-left:auto}
+  .tab{padding:6px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;
+       background:var(--bg);color:var(--mut);font-weight:600;font-size:13px}
+  .tab.active{background:var(--accent);color:#04260f;border-color:var(--accent)}
+  .meta{padding:8px 20px;color:var(--mut);font-size:12px}
+  .wrap{overflow:auto;max-height:calc(100vh - 190px)}
+  table{border-collapse:collapse;width:100%;white-space:nowrap}
+  th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th{position:sticky;top:0;background:var(--head);cursor:pointer;user-select:none;font-size:12px;color:var(--mut)}
+  th:hover{color:var(--txt)}
+  th.sortcol{color:var(--accent)}
+  td.l,th.l{text-align:left}
+  tbody tr:hover{background:#10202b}
+  .rank{color:var(--mut);width:42px}
+  .name{font-weight:600}
+  .pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+  .D{background:#15324a;color:#7fc4ff}.M{background:#15402a;color:#79e0a0}
+  .F{background:#4a2030;color:#ff9bb5}.G{background:#41391a;color:#e8cd72}.U{background:#2a2a2a;color:#aaa}
+  label.chk{color:var(--mut);font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer}
+  .lab{color:var(--mut);font-size:12px}
+  input[type=number].agein{width:58px;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px}
+  .foot{padding:10px 20px;color:var(--mut);font-size:11px;border-top:1px solid var(--line)}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>European Soccer — Player Profiles <span style="color:var(--mut);font-weight:400">2025/26 season</span>
+    <span style="float:right;font-size:13px;font-weight:600"><a href="teams.html">Teams →</a> &nbsp; <a href="compare.html">Radar &amp; Compare →</a></span></h1>
+  <div class="sub">EPL · La Liga · Bundesliga · Serie A · Ligue 1 · UCL — data via balldontlie. Sums treat missing as 0; rating is season average.</div>
+</header>
+<div class="controls">
+  <select id="league"></select>
+  <select id="pos"></select>
+  <input type="text" id="search" placeholder="Search player / team…"/>
+  <select id="minm">
+    <option value="3">min 3 matches</option>
+    <option value="5" selected>min 5 matches</option>
+    <option value="10">min 10 matches</option>
+    <option value="15">min 15 matches</option>
+    <option value="20">min 20 matches</option>
+  </select>
+  <span class="lab">Age</span>
+  <input type="number" id="agemin" min="14" max="50" placeholder="min" class="agein"/>
+  <span style="color:var(--mut)">–</span>
+  <input type="number" id="agemax" min="14" max="50" placeholder="max" class="agein"/>
+  <label class="chk"><input type="checkbox" id="per90"/> per 90</label>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="meta" id="meta"></div>
+<div class="wrap"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="foot">
+  Coverage note: advanced metrics (xA, xG, key passes, tackles, etc.) reflect the current 2025/26 season — the only season the trial exposed at this depth.
+  Position = most common lineup slot (G/D/M/F). “per 90” normalises counting stats by minutes played.
+</div>
+<script>
+const GROUPS = {
+  General:   [["matches","M",0],["minutes","Min",0],["rating","Rating",0],["goals","Goals",1],["assists","Asts",1],["shots","Shots",1],["key_passes","KeyP",1],["passes_acc","Pass✓",1],["touches","Touch",1],["dribbles","Drib",1],["duels_won","Duels✓",1],["tackles","Tkl",1],["yellow","YC",1],["red","RC",1]],
+  Creating:  [["matches","M",0],["minutes","Min",0],["xa","xA",1],["key_passes","KeyP",1],["assists","Asts",1],["big_chances_created","BigCh",1],["crosses_acc","Cross✓",1],["touches","Touch",1],["passes_acc","Pass✓",1]],
+  Defending: [["matches","M",0],["minutes","Min",0],["tackles","Tkl",1],["tackles_won","Tkl✓",1],["interceptions","Int",1],["clearances","Clr",1],["blocked_shots","Blk",1],["duels_won","Duels✓",1],["aerials_won","Aer✓",1],["recoveries","Rec",1]],
+  Attacking: [["matches","M",0],["minutes","Min",0],["goals","Goals",1],["np_goals","npG",1],["pen_goals","Pen",1],["header_goals","HeadG",1],["assists","Asts",1],["shots","Shots",1],["shots_on_t","SoT",1],["xg","xG",1],["xa","xA",1],["dribbles","Drib",1],["big_chances_missed","BigMiss",1]],
+};
+const DEFSORT = {General:"rating",Creating:"xa",Defending:"tackles",Attacking:"goals"};
+const POSCODE = {Goalkeeper:"G",Defender:"D",Midfielder:"M",Forward:"F"};
+let DATA=[], tab="General", sortKey="rating", sortDir=-1;
+
+function uniq(a){return [...new Set(a)]}
+function fmt(v){ if(v===null||v===undefined||v==="")return "–"; return (typeof v==="number" && !Number.isInteger(v))? v.toFixed(2): v; }
+
+function build(){
+  fetch("players.json").then(r=>r.json()).then(d=>{DATA=d; init();});
+}
+function init(){
+  const lg=document.getElementById("league");
+  lg.innerHTML='<option value="">All leagues</option>'+uniq(DATA.map(p=>p.league)).sort().map(l=>`<option>${l}</option>`).join("");
+  const ps=document.getElementById("pos");
+  ps.innerHTML='<option value="">All positions</option>'+["Goalkeeper","Defender","Midfielder","Forward"].map(p=>`<option>${p}</option>`).join("");
+  const tabs=document.getElementById("tabs");
+  tabs.innerHTML=Object.keys(GROUPS).map(t=>`<div class="tab${t==tab?' active':''}" data-t="${t}">${t}</div>`).join("");
+  tabs.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{tab=el.dataset.t;sortKey=DEFSORT[tab];sortDir=-1;
+     tabs.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.t==tab));render();});
+  ["league","pos","search","minm","per90","agemin","agemax"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  render();
+}
+function per90(p,key){ const m=p.minutes||0; if(!m) return 0; return p[key]*90/m; }
+function render(){
+  const lg=document.getElementById("league").value, ps=document.getElementById("pos").value,
+        q=document.getElementById("search").value.toLowerCase(), minm=+document.getElementById("minm").value,
+        p90=document.getElementById("per90").checked,
+        amin=parseInt(document.getElementById("agemin").value), amax=parseInt(document.getElementById("agemax").value);
+  let rows=DATA.filter(p=>(!lg||p.league==lg)&&(!ps||p.pos==ps)&&p.matches>=minm&&
+        (!q||(p.name||"").toLowerCase().includes(q)||(p.team||"").toLowerCase().includes(q))&&
+        (isNaN(amin)||(p.age!=null&&p.age>=amin))&&(isNaN(amax)||(p.age!=null&&p.age<=amax)));
+  const cols=GROUPS[tab];
+  const val=(p,key,rate)=> (p90 && rate && key!=="rating") ? per90(p,key) : p[key];
+  rows.sort((a,b)=>{ const c=cols.find(c=>c[0]===sortKey); const rate=c?c[2]:0;
+     let va=val(a,sortKey,rate), vb=val(b,sortKey,rate);
+     va=(va===null||va===undefined)?-1e9:va; vb=(vb===null||vb===undefined)?-1e9:vb;
+     return (va<vb?-1:va>vb?1:0)*sortDir; });
+  // header
+  const head=document.getElementById("head");
+  let h=`<th class="rank">#</th><th class="l">Player</th><th class="l">Pos</th><th class="l">Team</th><th class="l">Comp</th><th>Age</th>`;
+  cols.forEach(c=>{h+=`<th class="${c[0]==sortKey?'sortcol':''}" data-k="${c[0]}" data-r="${c[2]}">${c[1]}</th>`});
+  head.innerHTML=h;
+  head.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;
+     if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}render();});
+  // body
+  const tb=document.getElementById("rows");
+  tb.innerHTML=rows.slice(0,500).map((p,i)=>{
+     let r=`<td class="rank">${i+1}</td><td class="l name">${p.name}</td>`+
+           `<td class="l"><span class="pill ${POSCODE[p.pos]||'U'}">${POSCODE[p.pos]||'?'}</span></td>`+
+           `<td class="l" style="color:var(--mut)">${p.team||''}</td>`+
+           `<td class="l" style="color:var(--mut)">${p.league}</td><td>${p.age??'–'}</td>`;
+     cols.forEach(c=>{let v=val(p,c[0],c[2]); r+=`<td>${fmt(v)}</td>`});
+     return `<tr>${r}</tr>`;
+  }).join("");
+  document.getElementById("meta").textContent=
+     `${rows.length} players${rows.length>500?' (showing top 500)':''} · view: ${tab}${p90?' · per 90':''} · sorted by ${sortKey} ${sortDir<0?'↓':'↑'}`;
+}
+build();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>European Soccer — Team Profiles (2025/26)</title>
+<style>
+  :root{--bg:#0f1419;--panel:#171e26;--line:#26303b;--txt:#e6edf3;--mut:#8b9bab;
+        --accent:#3fb950;--accent2:#388bfd;--head:#1f2933;}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--txt)}
+  header{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+  h1{margin:0 0 4px;font-size:18px}
+  .sub{color:var(--mut);font-size:12px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 20px;
+            background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  select,input[type=text]{background:var(--bg);color:var(--txt);border:1px solid var(--line);
+            border-radius:6px;padding:6px 8px;font-size:13px}
+  input[type=text]{min-width:180px}
+  .tabs{display:flex;gap:4px;margin-left:auto}
+  .tab{padding:6px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;
+       background:var(--bg);color:var(--mut);font-weight:600;font-size:13px}
+  .tab.active{background:var(--accent);color:#04260f;border-color:var(--accent)}
+  .meta{padding:8px 20px;color:var(--mut);font-size:12px}
+  .wrap{overflow:auto;max-height:calc(100vh - 190px)}
+  table{border-collapse:collapse;width:100%;white-space:nowrap}
+  th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th{position:sticky;top:0;background:var(--head);cursor:pointer;user-select:none;font-size:12px;color:var(--mut)}
+  th:hover{color:var(--txt)}
+  th.sortcol{color:var(--accent)}
+  td.l,th.l{text-align:left}
+  tbody tr:hover{background:#10202b}
+  .rank{color:var(--mut);width:42px}
+  .name{font-weight:600}
+  .pos td{color:var(--accent2)}
+  .foot{padding:10px 20px;color:var(--mut);font-size:11px;border-top:1px solid var(--line)}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>European Soccer — Team Profiles <span style="color:var(--mut);font-weight:400">2025/26 season</span>
+    <span style="float:right;font-size:13px;font-weight:600"><a href="index.html">← Players</a> &nbsp; <a href="compare.html">Radar &amp; Compare →</a></span></h1>
+  <div class="sub">Team-level match stats (possession, xG for/against, shot quality, defensive actions) — data via balldontlie. “pm” = per match.</div>
+</header>
+<div class="controls">
+  <select id="league"></select>
+  <input type="text" id="search" placeholder="Search team…"/>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="meta" id="meta"></div>
+<div class="wrap"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="foot">
+  Current 2025/26 season. xG against and shots against are derived by pairing the two teams' rows in each match.
+  Points/GF/GA from final scores; teams with under 3 matches are excluded.
+</div>
+<script>
+const GROUPS = {
+  Overview:  [["matches","P"],["points","Pts"],["w","W"],["d","D"],["l","L"],["gf","GF"],["ga","GA"],["gd","GD"],["xg","xG"],["xga","xGA"],["xgd","xGD"],["possession","Poss%"]],
+  Attacking: [["matches","P"],["gf","GF"],["xg","xG"],["shots_pm","Shots"],["sot_pm","SoT"],["big_ch_pm","BigCh"],["corners_pm","Corn"]],
+  Defending: [["matches","P"],["ga","GA"],["xga","xGA"],["shots_ag_pm","ShAg"],["tackles_pm","Tkl"],["interceptions_pm","Int"],["clearances_pm","Clr"],["saves_pm","Sv"]],
+  Possession:[["matches","P"],["possession","Poss%"],["pass_acc","Pass%"],["passes_pm","Pass"],["aerials_won_pm","Aer✓"],["fouls_pm","Fouls"],["yellow_pm","YC"]],
+};
+const DEFSORT = {Overview:"points",Attacking:"xg",Defending:"xga",Possession:"possession"};
+let DATA=[], tab="Overview", sortKey="points", sortDir=-1;
+
+function uniq(a){return [...new Set(a)]}
+function fmt(v){ if(v===null||v===undefined||v==="")return "–"; return (typeof v==="number" && !Number.isInteger(v))? v.toFixed(2): v; }
+
+function build(){ fetch("teams.json").then(r=>r.json()).then(d=>{DATA=d; init();}); }
+function init(){
+  const lg=document.getElementById("league");
+  lg.innerHTML='<option value="">All leagues</option>'+uniq(DATA.map(t=>t.league)).sort().map(l=>`<option>${l}</option>`).join("");
+  const tabs=document.getElementById("tabs");
+  tabs.innerHTML=Object.keys(GROUPS).map(t=>`<div class="tab${t==tab?' active':''}" data-t="${t}">${t}</div>`).join("");
+  tabs.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{tab=el.dataset.t;sortKey=DEFSORT[tab];sortDir=-1;
+     tabs.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.t==tab));render();});
+  ["league","search"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  render();
+}
+function render(){
+  const lg=document.getElementById("league").value, q=document.getElementById("search").value.toLowerCase();
+  let rows=DATA.filter(t=>(!lg||t.league==lg)&&(!q||(t.team||"").toLowerCase().includes(q)));
+  const cols=GROUPS[tab];
+  rows.sort((a,b)=>{ let va=a[sortKey],vb=b[sortKey];
+     va=(va===null||va===undefined)?-1e9:va; vb=(vb===null||vb===undefined)?-1e9:vb;
+     return (va<vb?-1:va>vb?1:0)*sortDir; });
+  const head=document.getElementById("head");
+  let h=`<th class="rank">#</th><th class="l">Team</th><th class="l">Comp</th>`;
+  cols.forEach(c=>{h+=`<th class="${c[0]==sortKey?'sortcol':''}" data-k="${c[0]}">${c[1]}</th>`});
+  head.innerHTML=h;
+  head.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;
+     if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}render();});
+  const tb=document.getElementById("rows");
+  tb.innerHTML=rows.map((t,i)=>{
+     let r=`<td class="rank">${i+1}</td><td class="l name">${t.team}</td>`+
+           `<td class="l" style="color:var(--mut)">${t.league}</td>`;
+     cols.forEach(c=>{r+=`<td>${fmt(t[c[0]])}</td>`});
+     return `<tr>${r}</tr>`;
+  }).join("");
+  document.getElementById("meta").textContent=
+     `${rows.length} teams · view: ${tab} · sorted by ${sortKey} ${sortDir<0?'↓':'↑'}`;
+}
+build();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+/* Motion contracts (§10) */
+
+@keyframes scout-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scout-route-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scanline-sweep {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100vh); }
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes radar-grow {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flash-white {
+  0% { background: #ffffff; opacity: 0.9; }
+  100% { background: #ffffff; opacity: 0; }
+}
+
+.route-fade {
+  animation: scout-route-in 180ms ease-out;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-surface) 0px,
+    var(--color-bg-elevated) 200px,
+    var(--color-bg-surface) 400px
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1200ms linear infinite;
+}
+
+.spinner::after {
+  content: '|';
+  animation: ascii-spin 320ms steps(1) infinite;
+}
+@keyframes ascii-spin {
+  0% { content: '|'; }
+  25% { content: '/'; }
+  50% { content: '-'; }
+  75% { content: '\\'; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
