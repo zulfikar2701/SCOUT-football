@@ -38,7 +38,7 @@ export function Players() {
   const rows = data?.rows ?? [];
 
   return (
-    <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <div className="players-layout">
       <FilterPanel />
       <section style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--color-bg-base)' }}>
         <StatCategoryTabs />

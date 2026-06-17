@@ -87,7 +87,7 @@ export function Compare() {
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div className="panel" style={{ padding: 18, width: 380, flexShrink: 0 }}>
+          <div className="panel compare-radar-panel" style={{ padding: 18, flexShrink: 0 }}>
             <div className="label" style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 6 }}>Overlaid Radar · per 90 percentile</div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <RadarChart axes={axisLabels} series={radarSeries} size={320} />
@@ -101,7 +101,7 @@ export function Compare() {
             </div>
           </div>
 
-          <div className="panel" style={{ padding: 18, flex: 1, minWidth: 360 }}>
+          <div className="panel compare-bars-panel" style={{ padding: 18, flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
               <div className="label" style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Grouped Bars {per90 ? '· per 90' : ''}</div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>

@@ -53,8 +53,8 @@ export function Scatter() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 22, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div className="panel" style={{ padding: 16, flex: 1, minWidth: 480 }}>
+      <div className="scatter-layout" style={{ display: 'flex', gap: 22, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="panel" style={{ padding: 16, minWidth: 0 }}>
           {points ? (
             <ScatterPlot
               points={points}
@@ -72,7 +72,7 @@ export function Scatter() {
           </div>
         </div>
 
-        <div className="panel" style={{ padding: 16, width: 260, flexShrink: 0 }}>
+        <div className="panel" style={{ padding: 16, flexShrink: 0 }}>
           <div className="label" style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8 }}>
             Selection {selList.length ? `(${selList.length})` : ''}
           </div>

@@ -2,6 +2,19 @@
 data/
 exports/
 *.tar.gz
+bundesliga/
+epl/
+insights/
+laliga/
+ligue1/
+_state.json
+_ingest_state.json
+MANIFEST.md
+players_master.csv
+players_master.jsonl
+seriea/
+ucl/
+WORLDCUP_HANDOFF.md
 
 # Logs / scratch
 *.log
@@ -25,3 +38,6 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Credentials
+*.env

@@ -51,7 +51,7 @@ export function TopBar() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <span
-          className="mono"
+          className="mono hide-mobile"
           style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text-secondary)' }}
         >
           <span
@@ -65,7 +65,7 @@ export function TopBar() {
           />
           {count.toLocaleString('en-GB')} REC
         </span>
-        <span className="label" style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
+        <span className="label hide-mobile" style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
           {SEASON_LABEL}
         </span>
         <a
@@ -74,7 +74,7 @@ export function TopBar() {
           rel="noreferrer"
           aria-label="Creator on X"
           title="@zulfikarsenal on X"
-          style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}
+          style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', minWidth: 28, minHeight: 28, justifyContent: 'center' }}
         >
           <XLogo size={14} />
         </a>

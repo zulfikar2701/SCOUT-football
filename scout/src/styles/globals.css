@@ -48,6 +48,12 @@
   --color-rating-average: #8a96aa;
   --color-rating-poor: #ff4d4d;
 
+  /* World Cup accents */
+  --wc-accent-gold: #f5a623;
+  --wc-accent-gold-dim: #a06a10;
+  --wc-accent-gold-glow: rgba(245, 166, 35, 0.15);
+  --wc-pitch-green: #1a5e26;
+
   /* Type scale */
   --font-xs: 10px;
   --font-sm: 11px;
@@ -224,4 +230,97 @@ select {
 }
 .age-thumb::-moz-range-track {
   background: transparent;
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 640px) {
+  html { font-size: 13px; }
+  .hide-mobile { display: none !important; }
+}
+
+/* Panel hover — only on devices that support hover */
+@media (hover: hover) {
+  .panel-hover:hover {
+    border-color: var(--color-border-hi);
+    background: var(--color-bg-elevated);
+  }
+}
+
+/* Ensure tables scroll horizontally on narrow screens */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch-friendly min tap target */
+.touch-min {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Route fade animation */
+.route-fade {
+  animation: routeFadeIn 180ms ease-out;
+}
+@keyframes routeFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Players page responsive layout */
+.players-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.players-layout > aside {
+  width: 220px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .players-layout {
+    flex-direction: column;
+  }
+  .players-layout > aside {
+    width: 100%;
+    max-height: 240px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-mid);
+  }
+}
+
+/* Scatter page responsive */
+.scatter-layout > .panel:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.scatter-layout > .panel:last-child {
+  width: 260px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .scatter-layout {
+    flex-direction: column !important;
+  }
+  .scatter-layout > .panel:last-child {
+    width: 100%;
+  }
+}
+
+/* Compare page responsive */
+.compare-radar-panel {
+  width: 380px;
+  flex-shrink: 0;
+}
+.compare-bars-panel {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .compare-radar-panel {
+    width: 100% !important;
+  }
+  .compare-bars-panel {
+    width: 100% !important;
+  }
 }

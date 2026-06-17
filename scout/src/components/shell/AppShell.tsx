@@ -21,9 +21,9 @@ export function AppShell() {
   }, [toggleSearch]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <TopBar />
-      <main key={location.pathname} className="route-fade" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <main key={location.pathname} className="route-fade" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Outlet />
       </main>
       <StatusBar />
